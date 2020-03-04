@@ -1,1 +1,1 @@
-python tutorials/basics/1_first.py
+sh scripts/gcn.sh
