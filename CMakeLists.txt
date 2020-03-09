@@ -9,6 +9,7 @@ message(STATUS "Start configuring project ${PROJECT_NAME}")
 include(cmake/util/Util.cmake)
 include(cmake/util/MshadowUtil.cmake)
 include(cmake/util/FindCUDA.cmake)
+include(cmake/util/FindROCM.cmake)
 
 if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/config.cmake)
   include(${CMAKE_CURRENT_BINARY_DIR}/config.cmake)
@@ -23,6 +24,7 @@ endif()
 # and add set(OPTION VALUE) to override these build options.
 # Alernatively, use cmake -DOPTION=VALUE through command-line.
 dgl_option(USE_CUDA "Build with CUDA" OFF)
+dgl_option(USE_ROCM "Build with ROCM" OFF)
 dgl_option(USE_OPENMP "Build with OpenMP" ON)
 dgl_option(BUILD_CPP_TEST "Build cpp unittest executables" OFF)
 # Set debug compile option for gdb, only happens when -DCMAKE_BUILD_TYPE=DEBUG
@@ -35,6 +37,12 @@ if(USE_CUDA)
   project(dgl C CXX)
   include(cmake/modules/CUDA.cmake)
 endif(USE_CUDA)
+
+if(USE_ROCM)
+  message(STATUS "Build with ROCM support")
+  project(dgl C CXX)
+  include(cmake/modules/ROCM.cmake)
+endif(USE_ROCM)
 
 # include directories
 include_directories("include")
@@ -118,6 +126,18 @@ if(USE_CUDA)
 else(USE_CUDA)
   add_library(dgl SHARED ${DGL_SRC})
 endif(USE_CUDA)
+
+# Configure rocm
+if(USE_ROCM)
+  dgl_config_rocm(DGL_ROCM_SRC)
+  list(APPEND DGL_SRC ${DGL_ROCM_SRC})
+endif(USE_ROCM)
+
+if(USE_ROCM)
+  rocm_add_library(dgl SHARED ${DGL_SRC})
+else(USE_ROCM)
+  add_library(dgl SHARED ${DGL_SRC})
+endif(USE_ROCM)
 
 # For serialization
 add_subdirectory("third_party/dmlc-core")
