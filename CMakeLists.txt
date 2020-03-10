@@ -121,23 +121,20 @@ if(USE_CUDA)
   list(APPEND DGL_SRC ${DGL_CUDA_SRC})
 endif(USE_CUDA)
 
-if(USE_CUDA)
-  cuda_add_library(dgl SHARED ${DGL_SRC})
-else(USE_CUDA)
-  add_library(dgl SHARED ${DGL_SRC})
-endif(USE_CUDA)
-
 # Configure rocm
 if(USE_ROCM)
   dgl_config_rocm(DGL_ROCM_SRC)
   list(APPEND DGL_SRC ${DGL_ROCM_SRC})
 endif(USE_ROCM)
 
-if(USE_ROCM)
+# add library
+if(USE_CUDA)
+  cuda_add_library(dgl SHARED ${DGL_SRC})
+elseif(USE_ROCM)
   rocm_add_library(dgl SHARED ${DGL_SRC})
-else(USE_ROCM)
+else(USE_CUDA)
   add_library(dgl SHARED ${DGL_SRC})
-endif(USE_ROCM)
+endif(USE_CUDA)
 
 # For serialization
 add_subdirectory("third_party/dmlc-core")
